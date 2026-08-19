@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBVA Analizer - Estado de Cuenta</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body data-is-frozen="{{ 'true' if is_frozen else 'false' }}">
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="40" height="40" rx="8" fill="url(#gradient)" />
+                        <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#004481" />
+                                <stop offset="100%" stop-color="#0066CC" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>BBVA Analizer</h1>
+            </div>
+            <p class="subtitle">Analiza y divide los gastos de tu estado de cuenta fácilmente</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-section" id="uploadSection">
+            <div class="upload-card">
+                <div class="upload-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                </div>
+                <h2>Sube tu Estado de Cuenta</h2>
+                <p>Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
+                <input type="file" id="fileInput" accept=".pdf" hidden>
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar PDF
+                </button>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <span id="fileName"></span>
+                    <button class="btn-small" onclick="uploadFile()">Analizar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analizando estado de cuenta...</p>
+        </div>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+
+            <!-- Info General -->
+            <div class="card info-card">
+                <h2>📋 Información General</h2>
+                <div class="info-grid" id="infoGeneral">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Resumen Financiero -->
+            <div class="card summary-card">
+                <h2>💰 Resumen Financiero</h2>
+                <div class="summary-grid" id="summaryGrid">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Asignación de Personas -->
+            <div class="card">
+                <h2>👥 Asignar Transacciones</h2>
+                <p class="helper-text">Asigna cada transacción a la persona correspondiente para calcular lo que debe
+                    pagar cada uno</p>
+
+                <div class="filter-buttons filters">
+                    <button class="filter-btn active" data-filter="todas" onclick="filterTransactions('todas')">
+                        Todas (<span id="count-todas">0</span>)
+                    </button>
+                    <!-- Los filtros de personas se generan dinámicamente con JavaScript -->
+                </div>
+
+                <div class="table-container">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                                <th>Monto</th>
+                                <th>Cuotas</th>
+                                <th>Asignar a</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Totales por Persona -->
+            <div class="card totals-card">
+                <h2>📊 Totales por Persona</h2>
+                <div class="totals-grid" id="totalsGrid">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="resetApp()">
+                    Cargar Otro PDF
+                </button>
+                <button class="btn btn-secondary" onclick="clearSavedAssignments()"
+                    title="Borrar asignaciones guardadas de este PDF">
+                    🗑️ Limpiar Asignaciones
+                </button>
+                <button class="btn btn-primary" onclick="generarPagos()">
+                    💳 Generar Pagos
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal para gestionar personas -->
+    <div id="personasModal" class="modal" role="dialog" aria-modal="true" aria-label="Gestionar Personas">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👥 Gestionar Personas</h2>
+                <button class="close-modal" onclick="closePersonasModal()" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Formulario para agregar nueva persona -->
+                <div class="add-persona-form">
+                    <h3>➕ Agregar Nueva Persona</h3>
+                    <form id="addPersonaForm" onsubmit="addNewPersona(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="personaNombre">Nombre *</label>
+                                <input type="text" id="personaNombre" required placeholder="Ej: María">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="personaIcono">Ícono *</label>
+                                <select id="personaIcono" required>
+                                    <option value="👨">👨 Hombre</option>
+                                    <option value="👩">👩 Mujer</option>
+                                    <option value="👦">👦 Niño</option>
+                                    <option value="👧">👧 Niña</option>
+                                    <option value="👴">👴 Adulto Mayor</option>
+                                    <option value="👵">👵 Adulta Mayor</option>
+                                    <option value="👤">👤 Persona</option>
+                                    <option value="👥">👥 Grupo</option>
+                                    <option value="🧑">🧑 Adulto</option>
+                                    <option value="👨‍💼">👨‍💼 Profesional</option>
+                                    <option value="👩‍💼">👩‍💼 Profesional</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="personaColor">Color *</label>
+                                <input type="color" id="personaColor" value="#1e88e5" required>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn-add">Agregar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de personas existentes -->
+                <div class="personas-list">
+                    <h3>📋 Personas Registradas</h3>
+                    <div id="personasListContainer">
+                        <!-- Se llena dinámicamente con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón flotante para abrir modal -->
+    <button class="floating-btn" onclick="openPersonasModal()" title="Gestionar Personas">
+        👥
+    </button>
+
+    <!-- Botón para cerrar la aplicación (solo versión ejecutable) -->
+    <button id="shutdownBtn" class="shutdown-btn" style="display: none;" title="Cerrar aplicación">
+        ⏻ Salir
+    </button>
+
+    <!-- Modal de Notificación -->
+    <div id="notificationModal" class="notification-modal" role="alertdialog" aria-modal="true">
+        <div class="notification-content">
+            <div class="notification-icon" id="notificationIcon"></div>
+            <div class="notification-message" id="notificationMessage"></div>
+            <button class="notification-btn" onclick="closeNotification()">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmModal" class="confirmation-modal" role="alertdialog" aria-modal="true">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <span class="confirmation-icon">⚠️</span>
+                <h3 id="confirmTitle">Confirmar Acción</h3>
+            </div>
+            <div class="confirmation-message" id="confirmMessage"></div>
+            <div class="confirmation-buttons">
+                <button class="btn-cancel" onclick="cancelConfirm()">Cancelar</button>
+                <button class="btn-confirm" onclick="acceptConfirm()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar descripción -->
+    <div id="editDescriptionModal" class="modal" role="dialog" aria-modal="true" aria-label="Editar Descripción">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Editar Descripción</h2>
+                <button class="close-modal" onclick="closeEditDescriptionModal()" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Descripción Original:</label>
+                    <input type="text" id="originalDescription" readonly class="readonly-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="newDescription">Nueva Descripción: *</label>
+                    <input type="text" id="newDescription" placeholder="Ej: SUSCRIPCION STREAMING" required>
+                    <small class="helper-text">
+                        Esta descripción se guardará y se aplicará automáticamente en futuros análisis cuando se
+                        encuentre la misma descripción original.
+                    </small>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeEditDescriptionModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="saveDescriptionReplacement()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>

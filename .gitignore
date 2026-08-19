@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Build artifacts
+build/
+dist/
+*.spec
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+
+# Flask
+instance/
+.webassets-cache
+
+# IDEs y artefactos locales de agentes
+.vscode/
+.idea/
+.atl/
+.engram/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+borrar.txt
+*.tmp
+
+# Uploads (PDFs temporales)
+uploads/
+*.pdf
+
+# Base de datos y archivos de datos
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/personas.json
+data/description_replacements.json
+
+# Log files
+*.log
+bbva_analizer.log
+
+# Environment variables (secrets)
+.env
+
+# Backups
+*_backup.json
+*.bak
