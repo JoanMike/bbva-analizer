@@ -1,7 +1,7 @@
 # BBVA Analizer
 
 <p align="center">
-  <img src="img/SAP-logo.webp" alt="BBVA Analizer logo" width="200">
+  <img src="img/bbva-analizer-img.png" alt="BBVA Analizer" width="800">
 </p>
 
 ![License](https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue)
