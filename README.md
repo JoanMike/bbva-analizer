@@ -1,5 +1,9 @@
 # BBVA Analizer
 
+<p align="center">
+  <img src="img/SAP-logo.webp" alt="BBVA Analizer logo" width="200">
+</p>
+
 ![License](https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue)
 ![Python](https://img.shields.io/badge/python-3.13%2B-blue?logo=python&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
@@ -166,7 +170,7 @@ Executable characteristics:
 
 - Python code: `app.py`, `start.py`, `src/`, `config/`
 - UI: `templates/`, `static/`
-- Executable resources: `icon.ico`
+- Executable resources: `img/icon.ico`
 
 To validate quick changes without rebuilding, run from source with `python start.py`.
 
@@ -179,8 +183,11 @@ bbvaAnalizer/
 ├── start.py                        # Startup script
 ├── iniciar.bat                     # Windows launcher
 ├── build.bat                       # Build script
-├── icon.ico                        # Executable icon
 ├── requirements.txt                # Python dependencies
+├── img/                            # Project images
+│   ├── SAP-logo.webp              # README logo
+│   ├── icon.ico                   # Executable icon
+│   └── icon.png                   # App icon (PNG)
 ├── config/                         # Centralized configuration
 │   ├── __init__.py
 │   └── settings.py                # Project constants and paths

@@ -29,7 +29,7 @@ echo Generando ejecutable (este paso puede tardar)...
 	--clean ^
 	--noconsole ^
 	--onefile ^
-	--icon icon.ico ^
+	--icon img/icon.ico ^
 	--add-data "templates;templates" ^
 	--add-data "static;static" ^
 	--add-data "src;src" ^
